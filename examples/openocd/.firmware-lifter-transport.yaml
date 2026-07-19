@@ -1,0 +1,7 @@
+transport:
+  type: openocd
+  details:
+    openocd_binary: openocd
+    config_files:
+      - board/stm32f4discovery.cfg
+      - target/stm32f4x.cfg

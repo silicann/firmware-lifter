@@ -1,0 +1,15 @@
+# builds
+/dist
+/build
+
+__pycache__
+
+# test results
+/.pytest_cache
+
+# coverage files
+.coverage*
+
+# style and linting
+/.mypy_cache
+/.ruff_cache

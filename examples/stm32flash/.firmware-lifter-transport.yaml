@@ -1,0 +1,6 @@
+transport:
+  type: stm32flash
+  details:
+    stm32flash_binary: stm32flash
+    device: /dev/ttyUSB0
+    baudrate: 115200

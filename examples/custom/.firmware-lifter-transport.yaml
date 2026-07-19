@@ -1,0 +1,7 @@
+transport:
+  type: custom
+  details:
+    shell: /bin/bash
+    template: >-
+      echo flashing {{profile}} from {{image}} on {{project_root}};
+      my-flasher --image "{{image}}" --mode "{{transport_type}}"

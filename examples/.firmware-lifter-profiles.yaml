@@ -1,0 +1,11 @@
+profiles:
+  debug:
+    image: build/debug.elf
+    pre_transfer: make build-debug
+  release:
+    image: build/release.hex
+  factory:
+    image: build/factory.hex
+  field:
+    image: build/field.elf
+    pre_transfer: make build-field
