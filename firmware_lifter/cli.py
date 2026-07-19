@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import argparse
 import sys
-from subprocess import CalledProcessError
 from pathlib import Path
 from typing import List, Optional
 
 from .config import ConfigError, load_project_config, resolve_profile
-from .transports import execute_profile
+from .transports import ExecutionError, execute_profile
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -40,13 +39,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     except ConfigError as exc:
         print(str(exc), file=sys.stderr)
         return 1
-    except CalledProcessError as exc:
-        print(f"Execution failed with exit code {exc.returncode}", file=sys.stderr)
+    except ExecutionError as exc:
+        label = "Pre-transfer" if exc.phase == "pre_transfer" else "Transfer"
+        print(f"{label} failed with exit code {exc.returncode}", file=sys.stderr)
         if exc.stderr:
-            if isinstance(exc.stderr, bytes):
-                sys.stderr.write(exc.stderr.decode(errors="replace"))
-            else:
-                sys.stderr.write(exc.stderr)
+            sys.stderr.write(exc.stderr)
         return 1
     except FileNotFoundError as exc:
         print(f"Execution failed: {exc}", file=sys.stderr)

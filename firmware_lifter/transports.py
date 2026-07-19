@@ -3,7 +3,8 @@ from __future__ import annotations
 import re
 import subprocess
 import shlex
-from typing import Dict, List, Mapping
+from dataclasses import dataclass
+from typing import Dict, List, Mapping, Optional
 
 from .config import (
     ConfigError,
@@ -19,27 +20,53 @@ from .config import (
 PLACEHOLDER_RE = re.compile(r"{{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}}")
 
 
+@dataclass(frozen=True)
+class ExecutionError(Exception):
+    phase: str
+    returncode: int
+    stderr: Optional[str] = None
+
+
+def _run(command, *, phase: str, **kwargs) -> None:
+    try:
+        subprocess.run(
+            command,
+            check=True,
+            stderr=subprocess.PIPE,
+            text=True,
+            **kwargs,
+        )
+    except subprocess.CalledProcessError as exc:
+        raise ExecutionError(
+            phase=phase,
+            returncode=exc.returncode,
+            stderr=exc.stderr,
+        ) from None
+    except FileNotFoundError:
+        raise ExecutionError(phase=phase, returncode=127) from None
+
+
 def execute_profile(profile: ResolvedProfile) -> None:
     if profile.pre_transfer:
-        subprocess.run(
+        _run(
             profile.pre_transfer,
+            phase="pre_transfer",
             shell=True,
             cwd=str(profile.project_root),
-            check=True,
         )
 
     command = build_transport_command(profile)
     if isinstance(command, str):
         shell = _custom_shell(profile.transport)
-        subprocess.run(
+        _run(
             command,
+            phase="transfer",
             shell=True,
             executable=shell,
             cwd=str(profile.project_root),
-            check=True,
         )
     else:
-        subprocess.run(command, cwd=str(profile.project_root), check=True)
+        _run(command, phase="transfer", cwd=str(profile.project_root))
 
 
 def build_transport_command(profile: ResolvedProfile):

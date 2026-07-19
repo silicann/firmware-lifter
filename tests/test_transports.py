@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import unittest
 from pathlib import Path
+import subprocess
 from unittest.mock import patch
 
 from firmware_lifter.config import (
@@ -85,10 +86,14 @@ class TransportTests(unittest.TestCase):
 
         self.assertEqual(pre_transfer_call.args[0], "make build")
         self.assertEqual(pre_transfer_call.kwargs["shell"], True)
+        self.assertEqual(pre_transfer_call.kwargs["stderr"], subprocess.PIPE)
+        self.assertEqual(pre_transfer_call.kwargs["text"], True)
         self.assertEqual(
             transport_call.args[0],
             ["stm32flash", "-b", "115200", "-w", "build/debug.bin", "/dev/ttyUSB0"],
         )
+        self.assertEqual(transport_call.kwargs["stderr"], subprocess.PIPE)
+        self.assertEqual(transport_call.kwargs["text"], True)
 
     def test_build_openocd_command(self) -> None:
         profile = self.make_profile(
