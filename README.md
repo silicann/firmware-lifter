@@ -28,7 +28,7 @@ transport:
 Run `firmware-lifter list` to show available profiles and `firmware-lifter run debug` to execute one.
 
 Supported transports:
-- `gdb`: `gdb_binary`, `target`
+- `gdb`: `target`, optional `gdb_binary` defaulting to `gdb-multiarch`
 - `openocd`: `openocd_binary`, `config_files`
 - `stm32flash`: `stm32flash_binary`, `device`, `baudrate`
 - `custom`: `template`, optional `shell`

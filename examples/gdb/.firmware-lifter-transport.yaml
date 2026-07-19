@@ -1,5 +1,5 @@
 transport:
   type: gdb
   details:
-    gdb_binary: arm-none-eabi-gdb
+    gdb_binary: gdb-multiarch
     target: localhost:3333

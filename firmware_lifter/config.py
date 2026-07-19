@@ -29,7 +29,7 @@ class ProjectConfig(StrictModel):
 
 
 class GdbTransportDetails(StrictModel):
-    gdb_binary: str
+    gdb_binary: str = "gdb-multiarch"
     target: str
 
 

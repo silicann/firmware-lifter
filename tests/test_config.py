@@ -38,7 +38,6 @@ profiles:
 transport:
   type: gdb
   details:
-    gdb_binary: arm-none-eabi-gdb
     target: localhost:3333
 """,
             )
@@ -53,6 +52,29 @@ transport:
             self.assertEqual(resolved.image, "build/debug.bin")
             self.assertEqual(resolved.pre_transfer, "make build-debug")
             self.assertEqual(resolved.transport.type, "gdb")
+            self.assertEqual(resolved.transport.details.gdb_binary, "gdb-multiarch")
+
+    def test_gdb_binary_defaults_to_multiarch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write(
+                root,
+                ".firmware-lifter-profiles.yaml",
+                "profiles:\n  debug:\n    image: build/debug.bin\n",
+            )
+            self.write(
+                root,
+                ".firmware-lifter-transport.yaml",
+                """
+transport:
+  type: gdb
+  details:
+    target: localhost:3333
+""",
+            )
+
+            transport = load_transport_config(root)
+            self.assertEqual(transport.details.gdb_binary, "gdb-multiarch")
 
     def test_unknown_profile_raises(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
