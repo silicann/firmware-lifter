@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "firmware_lifter"
-version = "0.0.1"
+version = "0.1.0"
 description = "Semi-automated firmware transfer to a target device"
 readme = "README.md"
 requires-python = ">=3.8"
