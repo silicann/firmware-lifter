@@ -44,20 +44,14 @@ firmware-lifter uses [`hatch`](https://hatch.pypa.io/) and the `pyproject.toml` 
 
 Dependencies are listed in the `pyproject.toml` and will be installed upon running python commands within the virtual environment created by `hatch`.
 
-## Linting & formatting
 
-`firmware-lifter` provides a preconfigured `hatch` action (see `pyproject.toml`) for
-typing checks:
-- `hatch run style:typing` for type check with `mypy`
+## Linting, formatting & testing
 
-By default hatch provides
-[static analysis checks](https://hatch.pypa.io/dev/config/internal/static-analysis/) via the `fmt`
-action:
-- `hatch fmt --check` for linting (defaults to `ruff`)
-- `hatch fmt` for formatting (defaults to `ruff`)
+- formatting: `just apply-style`
+- linting: `just lint`
+- test: `just test`
+    - with coverage check: `just test --cover`
 
-
-Code coverage can be checked with `hatch test --cover`. Note, [coverage](https://coverage.readthedocs.io/en/7.12.0/#) should be available on the machine before running coverage analysis.
 
 ## Versioning
 

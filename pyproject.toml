@@ -31,20 +31,25 @@ changelog = "https://github.com/silicann/firmware-lifter/blob/main/CHANGELOG.md"
 version = "bump-my-version bump {args}"
 
 [tool.hatch.envs.hatch-test]
-extra-dependencies = []
+extra-dependencies = [
+  "coverage",
+]
 
 [tool.hatch.envs.hatch-test.scripts]
 run = "python3 -m unittest discover tests"
+run-cov = "coverage run -m unittest discover tests"
+cov-combine = "coverage combine"
+cov-report = "coverage report"
 
-[tool.hatch.envs.style]
+[tool.hatch.envs.dev]
 extra-dependencies = [
+  "bump-my-version",
   "mypy",
 ]
 
-[tool.hatch.envs.style.scripts]
-typing = [
-  "mypy --install-types --non-interactive {args:firmware_lifter}"
-]
+[tool.hatch.envs.dev.scripts]
+bumpversion = "bump-my-version bump {{args}}"
+typing = "mypy --install-types --non-interactive {args:firmware_lifter}"
 
 [tool.hatch.envs.hatch-static-analysis]
 # disable hatch's overrides for ruff
