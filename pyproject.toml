@@ -27,9 +27,6 @@ source = "https://github.com/silicann/firmware-lifter.git"
 issues = "https://github.com/silicann/firmware-lifter/issues"
 changelog = "https://github.com/silicann/firmware-lifter/blob/main/CHANGELOG.md"
 
-[tool.hatch.envs.default.scripts]
-version = "bump-my-version bump {args}"
-
 [tool.hatch.envs.hatch-test]
 extra-dependencies = [
   "coverage",
@@ -48,7 +45,7 @@ extra-dependencies = [
 ]
 
 [tool.hatch.envs.dev.scripts]
-bumpversion = "bump-my-version bump {{args}}"
+bumpversion = "bump-my-version bump {args}"
 typing = "mypy --install-types --non-interactive {args:firmware_lifter}"
 
 [tool.hatch.envs.hatch-static-analysis]
