@@ -30,13 +30,11 @@ changelog = "https://github.com/silicann/firmware-lifter/blob/main/CHANGELOG.md"
 [tool.hatch.envs.default.scripts]
 version = "bump-my-version bump {args}"
 
-[tool.hatch.envs.test]
-dependencies = [
-  "pytest",
-]
+[tool.hatch.envs.hatch-test]
+extra-dependencies = []
 
-[tool.hatch.envs.test.scripts]
-test = "pytest {args:tests}"
+[tool.hatch.envs.hatch-test.scripts]
+run = "python3 -m unittest discover tests"
 
 [tool.hatch.envs.style]
 extra-dependencies = [
