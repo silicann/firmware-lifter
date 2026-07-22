@@ -38,22 +38,12 @@ Custom templates support placeholders like `{{image}}`, `{{profile}}`, `{{projec
 See `examples/` for complete configurations for different transports.
 The profile example file `examples/.firmware-lifter-profiles.yaml` is usable for all transports.
 
-## Development
+## Contributing
 
-firmware-lifter uses [`hatch`](https://hatch.pypa.io/) and the `pyproject.toml` to organise the project.
-
-Dependencies are listed in the `pyproject.toml` and will be installed upon running python commands within the virtual environment created by `hatch`.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for developer-related documentation.
 
 
-## Linting, formatting & testing
+## License
 
-- formatting: `just apply-style`
-- linting: `just lint`
-- test: `just test`
-    - with coverage check: `just test --cover`
-
-
-## Versioning
-
-firmware-lifter use [`bump-my-version`](https://github.com/callowayproject/bump-my-version) for versioning.
-- `hatch version major|minor|patch` will increase the respective level.
+This project is licensed under GNU GPL v3 or later.
+See `LICENSE` for the full text.
