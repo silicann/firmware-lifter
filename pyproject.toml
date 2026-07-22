@@ -8,7 +8,7 @@ version = "0.0.1"
 description = "Semi-automated firmware transfer to a target device"
 readme = "README.md"
 requires-python = ">=3.8"
-license = "MIT"
+license = "GPL-3.0-or-later"
 keywords = []
 classifiers = [
   "Programming Language :: Python",
@@ -20,6 +20,12 @@ dependencies = [
 
 [project.scripts]
 firmware-lifter = "firmware_lifter.cli:main"
+
+[project.urls]
+homepage = "https://github.com/silicann/firmware-lifter"
+source = "https://github.com/silicann/firmware-lifter.git"
+issues = "https://github.com/silicann/firmware-lifter/issues"
+changelog = "https://github.com/silicann/firmware-lifter/blob/main/CHANGELOG.md"
 
 [tool.hatch.envs.default.scripts]
 version = "bump-my-version bump {args}"
