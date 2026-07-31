@@ -9,3 +9,6 @@ profiles:
   field:
     image: build/field.elf
     pre_transfer: make build-field
+  platformio-default:
+    image: MyProject/.pio/build/default/firmware.elf
+    pre_transfer: cd MyProject && pio run -e default
