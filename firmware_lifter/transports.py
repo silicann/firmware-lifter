@@ -86,11 +86,17 @@ def build_gdb_command(image: str, details: GdbTransportDetails) -> List[str]:
     return [
         details.gdb_binary,
         "--batch",
-        image,
         "-ex",
-        f"target remote {details.target}",
+        "monitor reset halt",
+        "-ex",
+        f"target extended-remote {details.target}",
         "-ex",
         "load",
+        "-ex",
+        "compare-sections",
+        "-ex",
+        "monitor reset run",
+        image,
     ]
 
 

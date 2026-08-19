@@ -45,11 +45,17 @@ class TransportTests(unittest.TestCase):
             [
                 "gdb",
                 "--batch",
-                "build/debug.bin",
                 "-ex",
-                "target remote localhost:3333",
+                "monitor reset halt",
+                "-ex",
+                "target extended-remote localhost:3333",
                 "-ex",
                 "load",
+                "-ex",
+                "compare-sections",
+                "-ex",
+                "monitor reset run",
+                "build/debug.bin",
             ],
         )
 
