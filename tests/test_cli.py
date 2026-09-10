@@ -60,3 +60,80 @@ transport:
                 self.assertIn(expected, stderr.getvalue())
                 self.assertIn("gdb: target unreachable", stderr.getvalue())
                 self.assertEqual(stdout.getvalue(), "")
+
+    def test_upload_builds_standalone_profiles(self) -> None:
+        cases = [
+            (
+                ["upload", "gdb", "firmware.elf", "--target", "localhost:3333"],
+                "gdb",
+                {"gdb_binary": "gdb-multiarch", "target": "localhost:3333"},
+            ),
+            (
+                [
+                    "upload",
+                    "openocd",
+                    "firmware.bin",
+                    "--openocd-binary",
+                    "openocd",
+                    "--config-file",
+                    "board.cfg",
+                    "--config-file",
+                    "target.cfg",
+                ],
+                "openocd",
+                {
+                    "openocd_binary": "openocd",
+                    "config_files": ["board.cfg", "target.cfg"],
+                },
+            ),
+            (
+                [
+                    "upload",
+                    "stm32flash",
+                    "firmware.bin",
+                    "--stm32flash-binary",
+                    "stm32flash",
+                    "--device",
+                    "/dev/ttyUSB0",
+                    "--baudrate",
+                    "115200",
+                ],
+                "stm32flash",
+                {
+                    "stm32flash_binary": "stm32flash",
+                    "device": "/dev/ttyUSB0",
+                    "baudrate": 115200,
+                },
+            ),
+            (
+                [
+                    "upload",
+                    "custom",
+                    "firmware.bin",
+                    "--template",
+                    "flash {{image}}",
+                    "--shell",
+                    "/bin/bash",
+                ],
+                "custom",
+                {"template": "flash {{image}}", "shell": "/bin/bash"},
+            ),
+        ]
+
+        for argv, transport_type, details in cases:
+            with self.subTest(transport=transport_type):
+                with tempfile.TemporaryDirectory() as tmp:
+                    root = Path(tmp)
+                    with patch(
+                        "firmware_lifter.cli.Path.cwd", return_value=root
+                    ), patch("firmware_lifter.cli.execute_profile") as execute:
+                        exit_code = main(argv)
+
+                self.assertEqual(exit_code, 0)
+                profile = execute.call_args.args[0]
+                self.assertEqual(profile.name, "standalone")
+                self.assertEqual(profile.image, argv[2])
+                self.assertIsNone(profile.pre_transfer)
+                self.assertEqual(profile.project_root, root)
+                self.assertEqual(profile.transport.type, transport_type)
+                self.assertEqual(profile.transport.details.model_dump(), details)

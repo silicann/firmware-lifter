@@ -27,6 +27,19 @@ transport:
 
 Run `firmware-lifter list` to show available profiles and `firmware-lifter run debug` to execute one.
 
+### Standalone Uploads
+
+Upload an image without project configuration using `firmware-lifter upload`:
+
+```sh
+firmware-lifter upload gdb firmware.elf --target localhost:3333
+firmware-lifter upload openocd firmware.bin --openocd-binary openocd --config-file board.cfg --config-file target.cfg
+firmware-lifter upload stm32flash firmware.bin --stm32flash-binary stm32flash --device /dev/ttyUSB0 --baudrate 115200
+firmware-lifter upload custom firmware.bin --template 'my-flasher --image "{{image}}"'
+```
+
+`gdb` accepts optional `--gdb-binary` (default: `gdb-multiarch`), and `custom` accepts optional `--shell` (default: `/bin/sh`). Custom templates support the placeholders listed below; the standalone profile name is `standalone`.
+
 Supported transports:
 - `gdb`: `target`, optional `gdb_binary` defaulting to `gdb-multiarch`
 - `openocd`: `openocd_binary`, `config_files`
