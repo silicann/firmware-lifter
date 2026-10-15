@@ -28,4 +28,4 @@ release part: lint test
 
 publish:
     just build
-    twine upload dist/firmware_lifter-{{ CURRENT_VERSION }}*
+    hatch publish dist/firmware_lifter-{{ CURRENT_VERSION }}*
