@@ -41,6 +41,7 @@ def build_parser() -> argparse.ArgumentParser:
     gdb_parser.add_argument("image", help="Firmware image")
     gdb_parser.add_argument("--target", required=True, help="GDB target address")
     gdb_parser.add_argument("--gdb-binary", default="gdb-multiarch")
+    gdb_parser.add_argument("--mass-erase-command")
 
     openocd_parser = upload_transports.add_parser(
         "openocd", help="Upload using OpenOCD"
@@ -48,6 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
     openocd_parser.add_argument("image", help="Firmware image")
     openocd_parser.add_argument("--openocd-binary", required=True)
     openocd_parser.add_argument("--config-file", action="append", required=True)
+    openocd_parser.add_argument("--mass-erase-command")
 
     stm32flash_parser = upload_transports.add_parser(
         "stm32flash", help="Upload using stm32flash"
@@ -56,6 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
     stm32flash_parser.add_argument("--stm32flash-binary", required=True)
     stm32flash_parser.add_argument("--device", required=True)
     stm32flash_parser.add_argument("--baudrate", type=int, required=True)
+    stm32flash_parser.add_argument("--mass-erase", action="store_true")
 
     custom_parser = upload_transports.add_parser(
         "custom", help="Upload using a custom command template"
@@ -74,6 +77,7 @@ def resolve_standalone_profile(args: argparse.Namespace, root: Path) -> Resolved
             details=GdbTransportDetails(
                 gdb_binary=args.gdb_binary,
                 target=args.target,
+                mass_erase_command=args.mass_erase_command,
             )
         )
     elif args.transport == "openocd":
@@ -81,6 +85,7 @@ def resolve_standalone_profile(args: argparse.Namespace, root: Path) -> Resolved
             details=OpenOcdTransportDetails(
                 openocd_binary=args.openocd_binary,
                 config_files=args.config_file,
+                mass_erase_command=args.mass_erase_command,
             )
         )
     elif args.transport == "stm32flash":
@@ -89,6 +94,7 @@ def resolve_standalone_profile(args: argparse.Namespace, root: Path) -> Resolved
                 stm32flash_binary=args.stm32flash_binary,
                 device=args.device,
                 baudrate=args.baudrate,
+                mass_erase=args.mass_erase,
             )
         )
     elif args.transport == "custom":
@@ -131,7 +137,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(str(exc), file=sys.stderr)
         return 1
     except ExecutionError as exc:
-        label = "Pre-transfer" if exc.phase == "pre_transfer" else "Transfer"
+        labels = {
+            "pre_transfer": "Pre-transfer",
+            "mass_erase": "Mass erase",
+        }
+        label = labels.get(exc.phase, "Transfer")
         print(f"{label} failed with exit code {exc.returncode}", file=sys.stderr)
         if exc.stderr:
             sys.stderr.write(exc.stderr)

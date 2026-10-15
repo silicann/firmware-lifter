@@ -72,6 +72,34 @@ class TransportTests(unittest.TestCase):
             "flash build/debug.bin via debug",
         )
 
+    def test_gdb_mass_erase_command(self) -> None:
+        profile = self.make_profile(
+            GdbTransportConfig(
+                details=GdbTransportDetails(
+                    gdb_binary="gdb",
+                    target="localhost:3333",
+                    mass_erase_command="stm32f4x mass_erase 0",
+                )
+            )
+        )
+
+        with patch("firmware_lifter.transports.subprocess.run") as run:
+            execute_profile(profile)
+
+        self.assertEqual(
+            run.call_args_list[1].args[0],
+            [
+                "gdb",
+                "--batch",
+                "-ex",
+                "target extended-remote localhost:3333",
+                "-ex",
+                "monitor reset halt",
+                "-ex",
+                "monitor stm32f4x mass_erase 0",
+            ],
+        )
+
     def test_execute_profile_runs_pre_transfer_and_transport(self) -> None:
         profile = self.make_profile(
             Stm32FlashTransportConfig(
@@ -120,4 +148,60 @@ class TransportTests(unittest.TestCase):
                 "-c",
                 "program build/debug.bin verify reset exit",
             ],
+        )
+
+    def test_execute_profile_runs_mass_erase_before_upload(self) -> None:
+        profile = self.make_profile(
+            OpenOcdTransportConfig(
+                details=OpenOcdTransportDetails(
+                    openocd_binary="openocd",
+                    config_files=["board.cfg"],
+                    mass_erase_command="stm32f4x mass_erase 0",
+                )
+            )
+        )
+
+        with patch("firmware_lifter.transports.subprocess.run") as run:
+            execute_profile(profile)
+
+        self.assertEqual(run.call_count, 3)
+        self.assertEqual(
+            run.call_args_list[1].args[0],
+            [
+                "openocd",
+                "-f",
+                "board.cfg",
+                "-c",
+                "init; stm32f4x mass_erase 0; shutdown",
+            ],
+        )
+        self.assertEqual(
+            run.call_args_list[2].args[0],
+            [
+                "openocd",
+                "-f",
+                "board.cfg",
+                "-c",
+                "program build/debug.bin verify reset exit",
+            ],
+        )
+
+    def test_stm32flash_mass_erase_command(self) -> None:
+        profile = self.make_profile(
+            Stm32FlashTransportConfig(
+                details=Stm32FlashTransportDetails(
+                    stm32flash_binary="stm32flash",
+                    device="/dev/ttyUSB0",
+                    baudrate=115200,
+                    mass_erase=True,
+                )
+            )
+        )
+
+        with patch("firmware_lifter.transports.subprocess.run") as run:
+            execute_profile(profile)
+
+        self.assertEqual(
+            run.call_args_list[1].args[0],
+            ["stm32flash", "-b", "115200", "-e", "/dev/ttyUSB0"],
         )

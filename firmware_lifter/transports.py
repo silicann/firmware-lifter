@@ -55,6 +55,10 @@ def execute_profile(profile: ResolvedProfile) -> None:
             cwd=str(profile.project_root),
         )
 
+    mass_erase_command = build_mass_erase_command(profile)
+    if mass_erase_command:
+        _run(mass_erase_command, phase="mass_erase", cwd=str(profile.project_root))
+
     command = build_transport_command(profile)
     if isinstance(command, str):
         shell = _custom_shell(profile.transport)
@@ -82,6 +86,17 @@ def build_transport_command(profile: ResolvedProfile):
     raise ConfigError(f"Unsupported transport type: {transport.type}")
 
 
+def build_mass_erase_command(profile: ResolvedProfile) -> Optional[List[str]]:
+    transport = profile.transport
+    if transport.type == "gdb" and transport.details.mass_erase_command:
+        return build_gdb_mass_erase_command(transport.details)
+    if transport.type == "openocd" and transport.details.mass_erase_command:
+        return build_openocd_mass_erase_command(transport.details)
+    if transport.type == "stm32flash" and transport.details.mass_erase:
+        return build_stm32flash_mass_erase_command(transport.details)
+    return None
+
+
 def build_gdb_command(image: str, details: GdbTransportDetails) -> List[str]:
     return [
         details.gdb_binary,
@@ -100,11 +115,38 @@ def build_gdb_command(image: str, details: GdbTransportDetails) -> List[str]:
     ]
 
 
+def build_gdb_mass_erase_command(details: GdbTransportDetails) -> List[str]:
+    if not details.mass_erase_command:
+        raise ConfigError("GDB mass erase command is required")
+
+    return [
+        details.gdb_binary,
+        "--batch",
+        "-ex",
+        f"target extended-remote {details.target}",
+        "-ex",
+        "monitor reset halt",
+        "-ex",
+        f"monitor {details.mass_erase_command}",
+    ]
+
+
 def build_openocd_command(image: str, details: OpenOcdTransportDetails) -> List[str]:
     command: List[str] = [details.openocd_binary]
     for config_file in details.config_files:
         command.extend(["-f", config_file])
     command.extend(["-c", f"program {shlex.quote(image)} verify reset exit"])
+    return command
+
+
+def build_openocd_mass_erase_command(details: OpenOcdTransportDetails) -> List[str]:
+    if not details.mass_erase_command:
+        raise ConfigError("OpenOCD mass erase command is required")
+
+    command: List[str] = [details.openocd_binary]
+    for config_file in details.config_files:
+        command.extend(["-f", config_file])
+    command.extend(["-c", f"init; {details.mass_erase_command}; shutdown"])
     return command
 
 
@@ -117,6 +159,18 @@ def build_stm32flash_command(
         str(details.baudrate),
         "-w",
         image,
+        details.device,
+    ]
+
+
+def build_stm32flash_mass_erase_command(
+    details: Stm32FlashTransportDetails,
+) -> List[str]:
+    return [
+        details.stm32flash_binary,
+        "-b",
+        str(details.baudrate),
+        "-e",
         details.device,
     ]
 

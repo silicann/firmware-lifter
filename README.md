@@ -34,11 +34,25 @@ Upload an image without project configuration using `firmware-lifter upload`:
 ```sh
 firmware-lifter upload gdb firmware.elf --target localhost:3333
 firmware-lifter upload openocd firmware.bin --openocd-binary openocd --config-file board.cfg --config-file target.cfg
-firmware-lifter upload stm32flash firmware.bin --stm32flash-binary stm32flash --device /dev/ttyUSB0 --baudrate 115200
+firmware-lifter upload stm32flash firmware.bin --stm32flash-binary stm32flash --device /dev/ttyUSB0 --baudrate 115200 --mass-erase
 firmware-lifter upload custom firmware.bin --template 'my-flasher --image "{{image}}"'
 ```
 
 `gdb` accepts optional `--gdb-binary` (default: `gdb-multiarch`), and `custom` accepts optional `--shell` (default: `/bin/sh`). Custom templates support the placeholders listed below; the standalone profile name is `standalone`.
+
+To mass erase through GDB, specify the target server's monitor command. It is sent after connecting and halting the target, before the upload:
+
+```sh
+firmware-lifter upload gdb firmware.elf --target localhost:3333 --mass-erase-command 'stm32f4x mass_erase 0'
+```
+
+To mass erase with OpenOCD, specify the target's erase command. It is run as `init; COMMAND; shutdown` before the upload:
+
+```sh
+firmware-lifter upload openocd firmware.bin --openocd-binary openocd --config-file board.cfg --mass-erase-command 'stm32f4x mass_erase 0'
+```
+
+For configuration-driven uploads, set `mass_erase: true` in `stm32flash` transport details, or set `mass_erase_command` to the target-specific GDB or OpenOCD command.
 
 Supported transports:
 - `gdb`: `target`, optional `gdb_binary` defaulting to `gdb-multiarch`

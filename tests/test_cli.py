@@ -64,9 +64,21 @@ transport:
     def test_upload_builds_standalone_profiles(self) -> None:
         cases = [
             (
-                ["upload", "gdb", "firmware.elf", "--target", "localhost:3333"],
+                [
+                    "upload",
+                    "gdb",
+                    "firmware.elf",
+                    "--target",
+                    "localhost:3333",
+                    "--mass-erase-command",
+                    "stm32f4x mass_erase 0",
+                ],
                 "gdb",
-                {"gdb_binary": "gdb-multiarch", "target": "localhost:3333"},
+                {
+                    "gdb_binary": "gdb-multiarch",
+                    "target": "localhost:3333",
+                    "mass_erase_command": "stm32f4x mass_erase 0",
+                },
             ),
             (
                 [
@@ -79,11 +91,14 @@ transport:
                     "board.cfg",
                     "--config-file",
                     "target.cfg",
+                    "--mass-erase-command",
+                    "stm32f4x mass_erase 0",
                 ],
                 "openocd",
                 {
                     "openocd_binary": "openocd",
                     "config_files": ["board.cfg", "target.cfg"],
+                    "mass_erase_command": "stm32f4x mass_erase 0",
                 },
             ),
             (
@@ -97,12 +112,14 @@ transport:
                     "/dev/ttyUSB0",
                     "--baudrate",
                     "115200",
+                    "--mass-erase",
                 ],
                 "stm32flash",
                 {
                     "stm32flash_binary": "stm32flash",
                     "device": "/dev/ttyUSB0",
                     "baudrate": 115200,
+                    "mass_erase": True,
                 },
             ),
             (

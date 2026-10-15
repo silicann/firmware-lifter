@@ -31,17 +31,20 @@ class ProjectConfig(StrictModel):
 class GdbTransportDetails(StrictModel):
     gdb_binary: str = "gdb-multiarch"
     target: str
+    mass_erase_command: Optional[str] = None
 
 
 class OpenOcdTransportDetails(StrictModel):
     openocd_binary: str
     config_files: List[str]
+    mass_erase_command: Optional[str] = None
 
 
 class Stm32FlashTransportDetails(StrictModel):
     stm32flash_binary: str
     device: str
     baudrate: int
+    mass_erase: bool = False
 
 
 class CustomTransportDetails(StrictModel):
