@@ -2,6 +2,12 @@
 
 Semi-automated firmware transfer to a target device.
 
+## Installation
+
+```shell
+pipx install firmware-lifter
+```
+
 ## Usage
 
 Place these files in your project root:
