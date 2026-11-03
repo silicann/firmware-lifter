@@ -154,3 +154,39 @@ transport:
                 self.assertEqual(profile.project_root, root)
                 self.assertEqual(profile.transport.type, transport_type)
                 self.assertEqual(profile.transport.details.model_dump(), details)
+
+    def test_missing_image_reports_clear_error(self) -> None:
+        cases = [
+            (
+                ["upload", "gdb", "missing.elf", "--target", "localhost:3333"],
+                None,
+            ),
+            (
+                ["run", "debug"],
+                "profiles:\n  debug:\n    image: missing.elf\n",
+            ),
+        ]
+
+        for argv, profiles in cases:
+            with self.subTest(argv=argv):
+                with tempfile.TemporaryDirectory() as tmp:
+                    root = Path(tmp)
+                    if profiles:
+                        self.write(root, ".firmware-lifter-profiles.yaml", profiles)
+                        self.write(
+                            root,
+                            ".firmware-lifter-transport.yaml",
+                            "transport:\n  type: gdb\n  details:\n    target: localhost:3333\n",
+                        )
+
+                    stderr = StringIO()
+                    with patch(
+                        "firmware_lifter.cli.Path.cwd", return_value=root
+                    ), redirect_stderr(stderr):
+                        exit_code = main(argv)
+
+                self.assertEqual(exit_code, 1)
+                self.assertIn(
+                    f"Image file does not exist: {root / 'missing.elf'}",
+                    stderr.getvalue(),
+                )

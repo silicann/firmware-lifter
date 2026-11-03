@@ -4,6 +4,7 @@ import re
 import subprocess
 import shlex
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, List, Mapping, Optional
 
 from .config import (
@@ -55,6 +56,8 @@ def execute_profile(profile: ResolvedProfile) -> None:
             cwd=str(profile.project_root),
         )
 
+    _validate_image(profile)
+
     mass_erase_command = build_mass_erase_command(profile)
     if mass_erase_command:
         _run(mass_erase_command, phase="mass_erase", cwd=str(profile.project_root))
@@ -71,6 +74,14 @@ def execute_profile(profile: ResolvedProfile) -> None:
         )
     else:
         _run(command, phase="transfer", cwd=str(profile.project_root))
+
+
+def _validate_image(profile: ResolvedProfile) -> None:
+    image_path = Path(profile.image)
+    if not image_path.is_absolute():
+        image_path = profile.project_root / image_path
+    if not image_path.is_file():
+        raise ConfigError(f"Image file does not exist: {image_path.resolve()}")
 
 
 def build_transport_command(profile: ResolvedProfile):

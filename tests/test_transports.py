@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
-import subprocess
 from unittest.mock import patch
 
 from firmware_lifter.config import (
@@ -25,13 +26,23 @@ from firmware_lifter.transports import (
 
 
 class TransportTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary_directory = tempfile.TemporaryDirectory()
+        self.project_root = Path(self.temporary_directory.name)
+        image = self.project_root / "build" / "debug.bin"
+        image.parent.mkdir()
+        image.touch()
+
+    def tearDown(self) -> None:
+        self.temporary_directory.cleanup()
+
     def make_profile(self, transport: TransportConfig) -> ResolvedProfile:
         return ResolvedProfile(
             name="debug",
             image="build/debug.bin",
             pre_transfer="make build",
             transport=transport,
-            project_root=Path("/project"),
+            project_root=self.project_root,
         )
 
     def test_build_gdb_command(self) -> None:
@@ -128,6 +139,30 @@ class TransportTests(unittest.TestCase):
         )
         self.assertEqual(transport_call.kwargs["stderr"], subprocess.PIPE)
         self.assertEqual(transport_call.kwargs["text"], True)
+
+    def test_pre_transfer_can_create_image(self) -> None:
+        image = self.project_root / "build" / "generated.bin"
+        profile = ResolvedProfile(
+            name="debug",
+            image="build/generated.bin",
+            pre_transfer="make build",
+            transport=GdbTransportConfig(
+                details=GdbTransportDetails(gdb_binary="gdb", target="localhost:3333")
+            ),
+            project_root=self.project_root,
+        )
+
+        def run(command, **kwargs) -> None:
+            if command == "make build":
+                image.touch()
+
+        with patch(
+            "firmware_lifter.transports.subprocess.run", side_effect=run
+        ) as run_mock:
+            execute_profile(profile)
+
+        self.assertTrue(image.is_file())
+        self.assertEqual(run_mock.call_count, 2)
 
     def test_build_openocd_command(self) -> None:
         profile = self.make_profile(
